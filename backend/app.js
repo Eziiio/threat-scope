@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
@@ -40,6 +41,9 @@ const limiter = rateLimit({
   }
 });
 app.use('/api', limiter);
+
+// API routes
+app.use('/api/auth', authRoutes);
 
 // Health Check Endpoint
 app.get('/api/health', (req, res) => {
