@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import authRoutes from './routes/authRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 import { authLimiter, apiLimiter } from './middleware/rateLimiter.js';
 import errorHandler from './middleware/errorMiddleware.js';
 
@@ -32,6 +33,7 @@ app.use(cookieParser());
 
 // Apply global API limiter to other api routes (auth routes will use the stricter authLimiter)
 app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', apiLimiter);
 
 // Health Check Endpoint
