@@ -3,8 +3,9 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/authRoutes.js';
+import { authLimiter, apiLimiter } from './middleware/rateLimiter.js';
+import errorHandler from './middleware/errorMiddleware.js';
 
 const app = express();
 
@@ -29,21 +30,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Rate Limiting: 15 minutes window, max 100 requests per IP by default
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  message: {
-    success: false,
-    message: 'Too many requests from this IP, please try again after 15 minutes.'
-  }
-});
-app.use('/api', limiter);
-
-// API routes
-app.use('/api/auth', authRoutes);
+// Apply global API limiter to other api routes (auth routes will use the stricter authLimiter)
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api', apiLimiter);
 
 // Health Check Endpoint
 app.get('/api/health', (req, res) => {
@@ -63,16 +52,6 @@ app.use('*', (req, res, next) => {
 });
 
 // Centralized error handler
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
-
-  res.status(statusCode).json({
-    success: false,
-    message,
-    errors: err.errors || [],
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-  });
-});
+app.use(errorHandler);
 
 export default app;
