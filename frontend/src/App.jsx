@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute.jsx';
+import Layout from './components/layout/Layout.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import SkeletonLoader from './components/SkeletonLoader.jsx';
 import { Lock } from 'lucide-react';
@@ -43,8 +44,10 @@ function App() {
 
               {/* Private Analyst/Admin routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route element={<Layout />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Route>
                 <Route path="/unauthorized" element={<Unauthorized />} />
               </Route>
 
