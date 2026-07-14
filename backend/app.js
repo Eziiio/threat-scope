@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import investigationRoutes from './routes/investigationRoutes.js';
 import threatFeedRoutes from './routes/threatFeedRoutes.js';
+import savedIOCRoutes from './routes/savedIOCRoutes.js';
 import { protect } from './middleware/authMiddleware.js';
 import { authLimiter, apiLimiter } from './middleware/rateLimiter.js';
 import errorHandler from './middleware/errorMiddleware.js';
@@ -38,6 +39,7 @@ app.use(cookieParser());
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/threat-feed', threatFeedRoutes);
+app.use('/api/saved-iocs', protect, apiLimiter, savedIOCRoutes);
 app.use('/api', protect, apiLimiter, investigationRoutes);
 
 // Health Check Endpoint
