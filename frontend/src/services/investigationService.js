@@ -24,3 +24,10 @@ export const bookmarkIocApi = async (iocData) => {
   const response = await apiClient.post('/api/saved-iocs', iocData);
   return response.data;
 };
+
+export const downloadInvestigationPdfApi = async (id) => {
+  const response = await apiClient.get(`/api/${id}/pdf`, {
+    responseType: 'blob'
+  });
+  return response.data;
+};

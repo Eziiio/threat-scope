@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { 
   investigateIpApi, investigateDomainApi, investigateUrlApi, 
-  investigateHashApi, bookmarkIocApi 
+  investigateHashApi, bookmarkIocApi, downloadInvestigationPdfApi
 } from '../services/investigationService.js';
 import { 
   Shield, Globe, Key, Link2, MapPin, Database, Bookmark, AlertTriangle, 
-  Activity, CheckCircle, ShieldAlert, AlertCircle, Clock, Loader2, Sparkles
+  Activity, CheckCircle, ShieldAlert, AlertCircle, Clock, Loader2, Sparkles, Download
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -37,6 +38,35 @@ export const Investigate = () => {
   const [bookmarkTags, setBookmarkTags] = useState('');
   const [bookmarkNotes, setBookmarkNotes] = useState('');
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [pdfDownloading, setPdfDownloading] = useState(false);
+
+  // PDF report downloader
+  const handleDownloadPDF = async () => {
+    if (!result?.id) {
+      toast.error('Investigation session ID missing.');
+      return;
+    }
+    setPdfDownloading(true);
+    try {
+      const data = await downloadInvestigationPdfApi(result.id);
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `ThreatReport-${activeTab}-${currentQuery}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('PDF report exported successfully.');
+    } catch (err) {
+      toast.error('Failed to export PDF report.');
+    } finally {
+      setPdfDownloading(false);
+    }
+  };
+
   // Setup tab configurations
   const tabs = {
     ip: { label: 'IP Address', icon: Globe, schema: ipSchema, placeholder: '8.8.8.8' },
@@ -62,16 +92,17 @@ export const Investigate = () => {
   };
 
   // Submit scan handler
-  const onSubmit = async (data) => {
+  const onSubmit = async (data, tabOverride) => {
+    const currentTab = tabOverride || activeTab;
     setLoading(true);
     setResult(null);
     setCurrentQuery(data.query);
     try {
       let response;
-      if (activeTab === 'ip') response = await investigateIpApi(data.query);
-      else if (activeTab === 'domain') response = await investigateDomainApi(data.query);
-      else if (activeTab === 'url') response = await investigateUrlApi(data.query);
-      else if (activeTab === 'hash') response = await investigateHashApi(data.query);
+      if (currentTab === 'ip') response = await investigateIpApi(data.query);
+      else if (currentTab === 'domain') response = await investigateDomainApi(data.query);
+      else if (currentTab === 'url') response = await investigateUrlApi(data.query);
+      else if (currentTab === 'hash') response = await investigateHashApi(data.query);
 
       if (response.success) {
         setResult(response.data);
@@ -84,6 +115,24 @@ export const Investigate = () => {
       setLoading(false);
     }
   };
+
+  // Trigger auto scan from search parameters on mount
+  useEffect(() => {
+    const query = searchParams.get('query');
+    const type = searchParams.get('type');
+
+    if (query && type && tabs[type]) {
+      setActiveTab(type);
+      reset({ query });
+      setCurrentQuery(query);
+      
+      // Execute submit passing type override
+      onSubmit({ query }, type);
+      
+      // Flush params so page reloads don't loop scans
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams]);
 
   // Bookmark submission handler
   const handleBookmarkSubmit = async (e) => {
@@ -223,14 +272,25 @@ export const Investigate = () => {
               </div>
             </div>
 
-            {/* Save IOC button */}
-            <button
-              onClick={() => setModalOpen(true)}
-              className="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-sky-500/20 hover:bg-slate-950/80 px-5 py-3 rounded-xl text-xs font-mono text-slate-200 transition duration-150 cursor-pointer"
-            >
-              <Bookmark className="w-4 h-4 text-sky-400" />
-              <span>Save IOC to watchlist</span>
-            </button>
+            {/* Action buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleDownloadPDF}
+                disabled={pdfDownloading}
+                className="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-sky-500/20 hover:bg-slate-950/80 px-5 py-3 rounded-xl text-xs font-mono text-slate-200 transition duration-150 cursor-pointer disabled:opacity-50"
+              >
+                {pdfDownloading ? <Loader2 className="w-4 h-4 animate-spin text-sky-400" /> : <Download className="w-4 h-4 text-sky-400" />}
+                <span>{pdfDownloading ? 'Exporting PDF...' : 'Export PDF Report'}</span>
+              </button>
+
+              <button
+                onClick={() => setModalOpen(true)}
+                className="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-sky-500/20 hover:bg-slate-950/80 px-5 py-3 rounded-xl text-xs font-mono text-slate-200 transition duration-150 cursor-pointer"
+              >
+                <Bookmark className="w-4 h-4 text-sky-400" />
+                <span>Save IOC to watchlist</span>
+              </button>
+            </div>
             
           </div>
 

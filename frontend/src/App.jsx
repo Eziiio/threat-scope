@@ -14,6 +14,8 @@ const Register = lazy(() => import('./pages/Register.jsx'));
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
 const Investigate = lazy(() => import('./pages/Investigate.jsx'));
+const SavedIOCs = lazy(() => import('./pages/SavedIOCs.jsx'));
+const ThreatFeed = lazy(() => import('./pages/ThreatFeed.jsx'));
 
 // Mini unauthorized page
 const Unauthorized = () => (
@@ -48,6 +50,8 @@ function App() {
                 <Route element={<Layout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/investigate" element={<Investigate />} />
+                  <Route path="/saved-iocs" element={<SavedIOCs />} />
+                  <Route path="/threat-feed" element={<ThreatFeed />} />
                   <Route path="/profile" element={<Profile />} />
                 </Route>
                 <Route path="/unauthorized" element={<Unauthorized />} />

@@ -21,6 +21,10 @@ const server = app.listen(PORT, () => {
   console.log(`[Server] ThreatScope backend running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
 
+// Initialize Socket.io server
+import { initSocket } from './socket.js';
+initSocket(server);
+
 // Handle unhandled rejections
 process.on('unhandledRejection', (err) => {
   console.error('[CRITICAL] Unhandled Rejection. Shutting down server...');

@@ -3,7 +3,8 @@ import {
   investigateIP, 
   investigateDomain, 
   investigateURL, 
-  investigateHash 
+  investigateHash,
+  exportInvestigationPDF
 } from '../controllers/investigationController.js';
 import { 
   validateIP, 
@@ -18,5 +19,6 @@ router.post('/ip', validateIP, investigateIP);
 router.post('/domain', validateDomain, investigateDomain);
 router.post('/url', validateURL, investigateURL);
 router.post('/hash', validateHash, investigateHash);
+router.get('/:id/pdf', exportInvestigationPDF);
 
 export default router;
