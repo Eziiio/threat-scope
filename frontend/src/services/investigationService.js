@@ -31,3 +31,8 @@ export const downloadInvestigationPdfApi = async (id) => {
   });
   return response.data;
 };
+
+export const explainThreatApi = async (investigationId) => {
+  const response = await apiClient.post('/api/ai/explain', { investigationId });
+  return response.data;
+};

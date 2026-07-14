@@ -40,6 +40,60 @@ export const Investigate = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  // AI threat insights retriever
+  const handleGetAIExplanation = async () => {
+    if (!result?.id) {
+      toast.error('Investigation session ID missing.');
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await explainThreatApi(result.id);
+      if (res.success) {
+        setAiExplanation(res.explanation);
+        toast.success('AI threat explanation retrieved.');
+      }
+    } catch (err) {
+      toast.error('Failed to retrieve AI analysis.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Helper utility to parse markdown in browser client
+  const renderMarkdown = (text) => {
+    if (!text) return null;
+    return text.split('\n').map((line, index) => {
+      if (line.startsWith('### ')) {
+        return (
+          <h3 key={index} className="text-xs font-mono font-bold text-sky-400 mt-4 mb-2 uppercase tracking-wider">
+            {line.replace('### ', '')}
+          </h3>
+        );
+      }
+      if (line.startsWith('- ')) {
+        return (
+          <li key={index} className="text-xs text-slate-300 ml-4 list-disc mb-1">
+            {line.replace('- ', '')}
+          </li>
+        );
+      }
+      
+      const boldRegex = /\*\*(.*?)\*\*/g;
+      if (boldRegex.test(line)) {
+        const parts = line.split(boldRegex);
+        return (
+          <p key={index} className="text-xs text-slate-300 leading-relaxed mb-2">
+            {parts.map((part, i) => i % 2 === 1 ? <strong key={i} className="text-slate-100 font-bold">{part}</strong> : part)}
+          </p>
+        );
+      }
+      return <p key={index} className="text-xs text-slate-300 leading-relaxed mb-2">{line}</p>;
+    });
+  };
 
   // PDF report downloader
   const handleDownloadPDF = async () => {
@@ -96,6 +150,7 @@ export const Investigate = () => {
     const currentTab = tabOverride || activeTab;
     setLoading(true);
     setResult(null);
+    setAiExplanation(null);
     setCurrentQuery(data.query);
     try {
       let response;
@@ -292,6 +347,40 @@ export const Investigate = () => {
               </button>
             </div>
             
+          </div>
+
+          {/* AI Threat Insights Card */}
+          <div className="glass-card rounded-2xl p-6 border border-slate-900 glow-blue space-y-4">
+            <h3 className="text-sm font-mono font-bold tracking-wider text-slate-400 uppercase flex items-center gap-2 border-b border-slate-900 pb-3">
+              <Sparkles className="w-4 h-4 text-sky-400 animate-pulse" />
+              <span>AI threat intelligence analyst insights</span>
+            </h3>
+            
+            {!aiExplanation && !aiLoading && (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <p className="text-xs text-slate-500 mb-4">Request automated CTI correlation summaries from Google Gemini.</p>
+                <button
+                  onClick={handleGetAIExplanation}
+                  className="bg-slate-900 hover:bg-slate-950 border border-slate-800 hover:border-sky-500/20 text-sky-400 px-5 py-2.5 rounded-xl text-xs font-bold transition duration-150 flex items-center gap-2 cursor-pointer shadow-lg"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Explain Threat with AI</span>
+                </button>
+              </div>
+            )}
+
+            {aiLoading && (
+              <div className="flex flex-col items-center justify-center py-10 gap-3 select-none">
+                <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+                <p className="text-xs font-mono text-slate-500 animate-pulse">Gemini intelligence model mapping indicators...</p>
+              </div>
+            )}
+
+            {aiExplanation && (
+              <div className="p-4 bg-slate-950/40 border border-slate-900 rounded-xl space-y-2 font-sans select-text leading-relaxed">
+                {renderMarkdown(aiExplanation)}
+              </div>
+            )}
           </div>
 
           {/* Details Section Grids */}
