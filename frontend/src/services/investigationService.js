@@ -1,10 +1,16 @@
 import apiClient from '../api/client.js';
 
 export const investigateIpApi = async (ip) => {
-  const response = await apiClient.post('/api/ip', { ip });
+  console.log("investigateIpApi started");
+
+  console.log("Before axios");
+
+  const response = await apiClient.post("/api/ip", { ip });
+
+  console.log("After axios");
+
   return response.data;
 };
-
 export const investigateDomainApi = async (domain) => {
   const response = await apiClient.post('/api/domain', { domain });
   return response.data;

@@ -146,31 +146,48 @@ export const Investigate = () => {
   };
 
   // Submit scan handler
-  const onSubmit = async (data, tabOverride) => {
-    const currentTab = tabOverride || activeTab;
+  const onSubmit = async (data) => {
+    console.log("=== onSubmit called ===");
+    console.log(data);
+
+    const currentTab = activeTab;
+    console.log("Current tab:", currentTab);
+
     setLoading(true);
     setResult(null);
     setAiExplanation(null);
     setCurrentQuery(data.query);
+
     try {
       let response;
-      if (currentTab === 'ip') response = await investigateIpApi(data.query);
-      else if (currentTab === 'domain') response = await investigateDomainApi(data.query);
-      else if (currentTab === 'url') response = await investigateUrlApi(data.query);
-      else if (currentTab === 'hash') response = await investigateHashApi(data.query);
+
+      if (currentTab === 'ip') {
+        console.log("Calling investigateIpApi...");
+        response = await investigateIpApi(data.query);
+        console.log("Returned from investigateIpApi");
+      }
+      else if (currentTab === 'domain') {
+        response = await investigateDomainApi(data.query);
+      }
+      else if (currentTab === 'url') {
+        response = await investigateUrlApi(data.query);
+      }
+      else if (currentTab === 'hash') {
+        response = await investigateHashApi(data.query);
+      }
 
       if (response.success) {
         setResult(response.data);
         toast.success('Investigation completed successfully.');
       }
     } catch (err) {
+      console.error("Full error:", err);   // <-- Add this too
       const msg = err.response?.data?.message || 'Lookup execution failed.';
       toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
-
   // Trigger auto scan from search parameters on mount
   useEffect(() => {
     const query = searchParams.get('query');
@@ -237,8 +254,8 @@ export const Investigate = () => {
               key={tabKey}
               onClick={() => handleTabChange(tabKey)}
               className={`flex items-center gap-2 px-6 py-3 border-b-2 text-xs font-mono tracking-wider transition duration-150 cursor-pointer ${activeTab === tabKey
-                  ? 'border-sky-500 text-sky-400 font-bold'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-sky-500 text-sky-400 font-bold'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`}
             >
               <TabIcon className="w-4 h-4" />
@@ -302,8 +319,8 @@ export const Investigate = () => {
 
             <div className="flex items-center gap-4">
               <div className={`p-4 rounded-xl border ${result.virustotal?.malicious > 0 || result.abuse?.abuseConfidenceScore > 20
-                  ? 'bg-rose-500/10 border-rose-500/20 text-rose-500'
-                  : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                ? 'bg-rose-500/10 border-rose-500/20 text-rose-500'
+                : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                 }`}>
                 {result.virustotal?.malicious > 0 || result.abuse?.abuseConfidenceScore > 20
                   ? <ShieldAlert className="w-8 h-8" />
