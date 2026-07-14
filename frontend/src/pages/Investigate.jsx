@@ -4,12 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
-import { 
-  investigateIpApi, investigateDomainApi, investigateUrlApi, 
+import {
+  investigateIpApi, investigateDomainApi, investigateUrlApi,
   investigateHashApi, bookmarkIocApi, downloadInvestigationPdfApi
 } from '../services/investigationService.js';
-import { 
-  Shield, Globe, Key, Link2, MapPin, Database, Bookmark, AlertTriangle, 
+import {
+  Shield, Globe, Key, Link2, MapPin, Database, Bookmark, AlertTriangle,
   Activity, CheckCircle, ShieldAlert, AlertCircle, Clock, Loader2, Sparkles, Download
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -18,8 +18,8 @@ import toast from 'react-hot-toast';
 const ipSchema = z.object({ query: z.string().ip('Invalid IP format (must be IPv4 or IPv6)') });
 const domainSchema = z.object({ query: z.string().min(1, 'Domain is required').regex(/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid domain format') });
 const urlSchema = z.object({ query: z.string().url('Invalid URL format (include protocol like https://)') });
-const hashSchema = z.object({ 
-  query: z.string().min(1, 'File hash is required').custom(val => {
+const hashSchema = z.object({
+  query: z.string().min(1, 'File hash is required').refine(val => {
     const len = val.length;
     const isHex = /^[a-fA-F0-9]+$/.test(val);
     return isHex && (len === 32 || len === 40 || len === 64);
@@ -31,7 +31,7 @@ export const Investigate = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [currentQuery, setCurrentQuery] = useState('');
-  
+
   // Bookmark Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -81,7 +81,7 @@ export const Investigate = () => {
           </li>
         );
       }
-      
+
       const boldRegex = /\*\*(.*?)\*\*/g;
       if (boldRegex.test(line)) {
         const parts = line.split(boldRegex);
@@ -180,10 +180,10 @@ export const Investigate = () => {
       setActiveTab(type);
       reset({ query });
       setCurrentQuery(query);
-      
+
       // Execute submit passing type override
       onSubmit({ query }, type);
-      
+
       // Flush params so page reloads don't loop scans
       setSearchParams({}, { replace: true });
     }
@@ -217,7 +217,7 @@ export const Investigate = () => {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Title */}
       <div>
         <h1 className="text-3xl font-display font-extrabold tracking-tight text-slate-100">
@@ -236,11 +236,10 @@ export const Investigate = () => {
             <button
               key={tabKey}
               onClick={() => handleTabChange(tabKey)}
-              className={`flex items-center gap-2 px-6 py-3 border-b-2 text-xs font-mono tracking-wider transition duration-150 cursor-pointer ${
-                activeTab === tabKey
+              className={`flex items-center gap-2 px-6 py-3 border-b-2 text-xs font-mono tracking-wider transition duration-150 cursor-pointer ${activeTab === tabKey
                   ? 'border-sky-500 text-sky-400 font-bold'
                   : 'border-transparent text-slate-400 hover:text-slate-200'
-              }`}
+                }`}
             >
               <TabIcon className="w-4 h-4" />
               <span>{tabs[tabKey].label}</span>
@@ -257,9 +256,8 @@ export const Investigate = () => {
               type="text"
               placeholder={`Enter indicator (e.g. ${tabs[activeTab].placeholder})`}
               {...register('query')}
-              className={`w-full bg-slate-950/80 border ${
-                errors.query ? 'border-rose-500/40 focus:border-rose-500' : 'border-slate-800 focus:border-sky-500'
-              } text-sm px-4 py-3 rounded-xl focus:ring-1 focus:ring-sky-500/20 outline-none transition duration-200 text-slate-200 placeholder-slate-600`}
+              className={`w-full bg-slate-950/80 border ${errors.query ? 'border-rose-500/40 focus:border-rose-500' : 'border-slate-800 focus:border-sky-500'
+                } text-sm px-4 py-3 rounded-xl focus:ring-1 focus:ring-sky-500/20 outline-none transition duration-200 text-slate-200 placeholder-slate-600`}
             />
             {errors.query && (
               <p className="text-[10px] font-mono text-rose-400 mt-1 flex items-center gap-1">
@@ -298,16 +296,15 @@ export const Investigate = () => {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          
+
           {/* Reputation summary panel */}
           <div className="glass-card rounded-2xl p-6 border border-slate-900 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            
+
             <div className="flex items-center gap-4">
-              <div className={`p-4 rounded-xl border ${
-                result.virustotal?.malicious > 0 || result.abuse?.abuseConfidenceScore > 20
+              <div className={`p-4 rounded-xl border ${result.virustotal?.malicious > 0 || result.abuse?.abuseConfidenceScore > 20
                   ? 'bg-rose-500/10 border-rose-500/20 text-rose-500'
                   : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-              }`}>
+                }`}>
                 {result.virustotal?.malicious > 0 || result.abuse?.abuseConfidenceScore > 20
                   ? <ShieldAlert className="w-8 h-8" />
                   : <CheckCircle className="w-8 h-8" />
@@ -346,7 +343,7 @@ export const Investigate = () => {
                 <span>Save IOC to watchlist</span>
               </button>
             </div>
-            
+
           </div>
 
           {/* AI Threat Insights Card */}
@@ -355,7 +352,7 @@ export const Investigate = () => {
               <Sparkles className="w-4 h-4 text-sky-400 animate-pulse" />
               <span>AI threat intelligence analyst insights</span>
             </h3>
-            
+
             {!aiExplanation && !aiLoading && (
               <div className="flex flex-col items-center justify-center py-6 text-center">
                 <p className="text-xs text-slate-500 mb-4">Request automated CTI correlation summaries from Google Gemini.</p>
@@ -400,9 +397,8 @@ export const Investigate = () => {
                       {result.virustotal.malicious} <span className="text-sm text-slate-500">/ {result.virustotal.harmless + result.virustotal.malicious + result.virustotal.suspicious + result.virustotal.undetected} engines</span>
                     </p>
                   </div>
-                  <div className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold ${
-                    result.virustotal.malicious > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                  }`}>
+                  <div className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold ${result.virustotal.malicious > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                    }`}>
                     {result.virustotal.malicious > 0 ? 'SUSPICIOUS' : 'SAFE'}
                   </div>
                 </div>
@@ -478,9 +474,8 @@ export const Investigate = () => {
                       {result.abuse.abuseConfidenceScore}%
                     </p>
                   </div>
-                  <div className={`px-3 py-1 rounded text-xs font-mono font-bold ${
-                    result.abuse.abuseConfidenceScore > 10 ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'
-                  }`}>
+                  <div className={`px-3 py-1 rounded text-xs font-mono font-bold ${result.abuse.abuseConfidenceScore > 10 ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'
+                    }`}>
                     {result.abuse.abuseConfidenceScore > 20 ? 'RISK HIGH' : 'RISK LOW'}
                   </div>
                 </div>
@@ -512,7 +507,7 @@ export const Investigate = () => {
                           </h4>
                           <span className="text-[9px] font-mono text-slate-500 flex items-center gap-1 whitespace-nowrap">
                             <Clock className="w-3.5 h-3.5" />
-                            {new Date(pulse.created).toLocaleDateString([], {month: 'short', year: 'numeric'})}
+                            {new Date(pulse.created).toLocaleDateString([], { month: 'short', year: 'numeric' })}
                           </span>
                         </div>
                         {pulse.tags && pulse.tags.length > 0 && (
@@ -555,7 +550,7 @@ export const Investigate = () => {
               </p>
 
               <form onSubmit={handleBookmarkSubmit} className="space-y-4">
-                
+
                 {/* Notes Input */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-mono text-slate-400 block uppercase">
