@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import authRoutes from './routes/authRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import investigationRoutes from './routes/investigationRoutes.js';
+import threatFeedRoutes from './routes/threatFeedRoutes.js';
 import { protect } from './middleware/authMiddleware.js';
 import { authLimiter, apiLimiter } from './middleware/rateLimiter.js';
 import errorHandler from './middleware/errorMiddleware.js';
@@ -36,6 +37,7 @@ app.use(cookieParser());
 // Apply global API limiter to other api routes (auth routes will use the stricter authLimiter)
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/threat-feed', threatFeedRoutes);
 app.use('/api', protect, apiLimiter, investigationRoutes);
 
 // Health Check Endpoint
