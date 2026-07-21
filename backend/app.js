@@ -12,6 +12,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import { protect } from './middleware/authMiddleware.js';
 import { authLimiter, apiLimiter } from './middleware/rateLimiter.js';
 import errorHandler from './middleware/errorMiddleware.js';
+import cveRoutes from './routes/cveRoutes.js';
 
 const app = express();
 

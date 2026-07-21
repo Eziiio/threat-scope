@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getThreatFeedApi } from '../services/threatFeedService.js';
-import { 
+import {
   Radio, Search, RefreshCw, Clock, ArrowUpRight, ShieldAlert,
   ChevronLeft, ChevronRight, Loader2, AlertCircle, Database
 } from 'lucide-react';
@@ -33,12 +33,12 @@ export const ThreatFeed = () => {
         severity: severityVal,
         refresh: refresh ? 'true' : 'false'
       });
-      
+
       if (response.success) {
         setReports(response.data.reports);
         setTotalPages(response.data.pagination.totalPages);
         setTotalCount(response.data.pagination.totalCount);
-        
+
         if (refresh) {
           toast.success('Threat intelligence pulses synchronized with AlienVault OTX.');
         }
@@ -89,7 +89,7 @@ export const ThreatFeed = () => {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -121,7 +121,7 @@ export const ThreatFeed = () => {
 
       {/* Filter Controls Bar */}
       <div className="glass-card rounded-2xl p-4 border border-slate-900 flex flex-col md:flex-row gap-4 items-center glow-blue">
-        
+
         {/* Search */}
         <div className="relative w-full md:flex-1">
           <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
@@ -171,7 +171,7 @@ export const ThreatFeed = () => {
 
       {/* Advisory Feed Card List */}
       <div className="space-y-6">
-        
+
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />
@@ -196,11 +196,11 @@ export const ThreatFeed = () => {
             {reports.map((report) => {
               const cveMatch = extractCVE(report.title);
               return (
-                <div 
-                  key={report._id} 
+                <div
+                  key={report._id}
                   className="glass-card rounded-2xl p-6 border border-slate-900 relative glow-blue flex flex-col justify-between gap-6 hover:border-slate-800/80 transition duration-300"
                 >
-                  
+
                   {/* Top Header Card row */}
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-900 pb-3">
                     <div className="flex items-center gap-3">
@@ -218,7 +218,7 @@ export const ThreatFeed = () => {
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-slate-600" />
-                        <span>{new Date(report.publishedAt).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'})}</span>
+                        <span>{new Date(report.publishedAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                       </span>
                     </div>
                   </div>
@@ -240,7 +240,7 @@ export const ThreatFeed = () => {
                         CVE matched: <span className="text-purple-400 font-bold">{cveMatch}</span>
                       </span>
                       <Link
-                        to={`/investigate?query=${encodeURIComponent(cveMatch)}&type=hash`}
+                        to={`/investigate?query=${encodeURIComponent(cveMatch)}&type=cve`}
                         className="inline-flex items-center gap-1 bg-slate-900 border border-slate-800 hover:border-purple-500/20 text-[10px] text-purple-400 font-mono font-bold px-3 py-1.5 rounded-lg transition duration-150 cursor-pointer"
                       >
                         <span>Investigate vulnerability indicators</span>
